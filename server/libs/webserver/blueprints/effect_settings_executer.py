@@ -5,92 +5,90 @@ from libs.webserver.messages import BadRequest, DeviceNotFound, NotFound, Settin
 
 
 class EffectSettingsExecuter(ExecuterBase):
+    def _devices_for_target(self, target: str) -> list[str] | DeviceNotFound:
+        """Return device ids represented by a device, group, or ``all_devices``."""
+        configs = self._config["device_configs"]
 
-    # TODO: Fix returning "all_devices" instead of actual device ID.
+        if target == self.all_devices_id:
+            device_ids = list(configs)
+        elif target.startswith("group_") and target in self._config["general_settings"]["device_groups"]:
+            device_ids = [device_id for device_id, config in configs.items() if target in config["device_groups"]]
+        elif target in configs:
+            device_ids = [target]
+        else:
+            return DeviceNotFound
+
+        if not device_ids:
+            return DeviceNotFound
+
+        return device_ids
 
     def get_effect_setting(self, device: str, effect: str, setting_key: str) -> dict | DeviceNotFound | SettingNotFound:
-        """Return the value of a setting for an effect."""
-        # TODO: Get the effect setting for groups.
-        # selected_device = device
-        # if device == self.all_devices_id:
-        #     selected_device = next(iter(self._config["device_configs"]))
+        """Return the value of a setting for an effect.
 
-        if device not in self._config["device_configs"]:
+        Groups and ``all_devices`` use the first device in that selection.
+        """
+        devices = self._devices_for_target(device)
+        if devices is DeviceNotFound:
             return DeviceNotFound
 
-        if setting_key not in self._config["device_configs"][device]["effects"][effect]:
+        effect_settings = self._config["device_configs"][devices[0]]["effects"].get(effect)
+        if effect_settings is None or setting_key not in effect_settings:
             return SettingNotFound
 
-        return {
-            "device": device,
-            "effect": effect,
-            "setting_key": setting_key,
-            "setting_value": self._config["device_configs"][device]["effects"][effect][setting_key]
-        }
+        return {"device": device, "effect": effect, "setting_key": setting_key, "setting_value": effect_settings[setting_key]}
 
-    def get_effect_settings(self, device: str, effect: str) -> dict | DeviceNotFound:
-        """Return all settings for an effect."""
-        # settings = dict()
-        # selected_device = device
+    def get_effect_settings(self, device: str, effect: str) -> dict | DeviceNotFound | SettingNotFound:
+        """Return all settings for an effect.
 
-        # if device == self.all_devices_id:
-        #     selected_device = next(iter(self._config["device_configs"]))
-
-        # for effect_setting_key in self._config["device_configs"][selected_device]["effects"][effect]:
-        #     settings[effect_setting_key] = self._config["device_configs"][selected_device]["effects"][effect][effect_setting_key]
-
-        if device not in self._config["device_configs"]:
+        Groups and ``all_devices`` use the first device in that selection.
+        """
+        devices = self._devices_for_target(device)
+        if devices is DeviceNotFound:
             return DeviceNotFound
 
-        return {
-            "device": device,
-            "effect": effect,
-            "settings": self._config["device_configs"][device]["effects"][effect]
-        }
+        effect_settings = self._config["device_configs"][devices[0]]["effects"].get(effect)
+        if effect_settings is None:
+            return SettingNotFound
+
+        return {"device": device, "effect": effect, "settings": effect_settings}
 
     def set_effect_settings(self, device: str, effect: str, settings: dict) -> dict | NotFound | BadRequest:
-        """Set effect settings for a device."""
-        # if device == self.all_devices_id:
-        #     return self.set_effect_setting_for_all(effect, settings)
-
+        """Set effect settings for a device, a group, or all devices."""
         if not settings:
             return BadRequest  # Don't let an empty dict through.
 
-        if device not in self._config["device_configs"] or effect not in self._config["device_configs"][device]["effects"]:
+        devices = self._devices_for_target(device)
+        if devices is DeviceNotFound:
             return NotFound
 
-        for setting_key, setting_value in settings.items():
-            if setting_key not in self._config["device_configs"][device]["effects"][effect]:
+        for device_id in devices:
+            effect_settings = self._config["device_configs"][device_id]["effects"].get(effect)
+            if effect_settings is None or any(setting_key not in effect_settings for setting_key in settings):
                 return NotFound
-            self._config["device_configs"][device]["effects"][effect][setting_key] = setting_value
-        self.update_cycle_job(device, effect)
+
+        for device_id in devices:
+            effect_settings = self._config["device_configs"][device_id]["effects"][effect]
+            for setting_key, setting_value in settings.items():
+                effect_settings[setting_key] = setting_value
+            self.update_cycle_job(device_id, effect)
 
         self.save_config()
-        self.refresh_device(device)
-        return {
-            "device": device,
-            "effect": effect,
-            "settings": settings
-        }
+        if device == self.all_devices_id:
+            self.refresh_device(self.all_devices_id)
+        else:
+            for device_id in devices:
+                self.refresh_device(device_id)
+
+        return {"device": device, "effect": effect, "settings": settings}
 
     def set_effect_settings_for_all(self, effect: str, settings: dict) -> dict | NotFound | BadRequest:
         """Set effect settings for all devices."""
-        if not settings:
-            return BadRequest  # Don't let an empty dict through.
+        result = self.set_effect_settings(self.all_devices_id, effect, settings)
+        if result is NotFound or result is BadRequest:
+            return result
 
-        for device in self._config["device_configs"]:
-            for setting_key, setting_value in settings.items():
-                if setting_key not in self._config["device_configs"][device]["effects"][effect]:
-                    return NotFound
-                self._config["device_configs"][device]["effects"][effect][setting_key] = setting_value
-            self.update_cycle_job(device, effect)
-
-        self.save_config()
-        self.refresh_device(self.all_devices_id)
-        return {
-            "effect": effect,
-            "settings": settings
-        }
+        return {"effect": effect, "settings": settings}
 
     def update_cycle_job(self, device: str, effect: str) -> None:
         """Change the Random Cycle Effect job interval on save."""

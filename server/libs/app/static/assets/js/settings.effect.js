@@ -88,21 +88,9 @@ $(() => {
 
     /**
      * Populate effect settings with config values.
+     * Groups and All Devices load the first device in that selection.
      */
     const setLocalSettings = () => {
-        if (dm.current.isGroup) {
-            // TODO: Implement UI/UX for populating settings when a group is selected.
-            // Options: load the default values, leave inputs blank, or show settings of first device.
-            new Toast('Displaying effect settings for groups is not supported yet.').error();
-            console.log('Not supported yet.');
-
-            // Reset form, slider labels and color picker to default values for now.
-            $('#settingsForm').get(0).reset();
-            $('#settingsForm span.badge').text('');
-            $('#color_picker').css('background-color', 'rgb(255, 255, 255)');
-            return;
-        }
-
         dm.current.getEffectSettings(effectIdentifier).then((response) => {
             $.each(response.settings, (key, value) => {
                 const el = $(`#${key}`);
@@ -118,6 +106,9 @@ $(() => {
                 }
                 el.trigger('change');
             });
+        }).fail((data) => {
+            console.log(`Error while loading effect settings. Error:\n\n${data.responseText}`);
+            new Toast('Error while loading effect settings.').error();
         });
     }
 
@@ -126,13 +117,6 @@ $(() => {
      */
     const saveEffectSettings = () => {
         if (!dm.current) return;
-
-        if (dm.current.isGroup) {
-            // TODO: Pass group of devices to API.
-            new Toast('Saving effect settings for groups is not supported yet.').error();
-            console.log('Not supported yet.');
-            return;
-        }
 
         // Serialize effect settings as JSON.
         const serializedForm = $('#settingsForm .setting_input').serializeJSON({

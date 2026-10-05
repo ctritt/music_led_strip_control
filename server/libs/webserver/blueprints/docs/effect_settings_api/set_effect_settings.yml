@@ -5,7 +5,8 @@ tags:
 
 requestBody:
   description: "The effect settings which to set.\n\n
-                Remove `device` to apply effect settings to all devices\n\n
+                Remove `device`, or set it to `all_devices`, to apply effect settings to all devices.\n\n
+                Set `device` to a group id to apply effect settings to every device in that group.\n\n
                 __Note:__ Not all settings are required."
   required: true
   content:

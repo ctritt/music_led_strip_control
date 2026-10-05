@@ -1,5 +1,5 @@
 from libs.webserver.schemas.config_validator_service import definitions, effect_enum, effect_schema, remove_required_keys
-from libs.webserver.schemas.custom_types import valid_device_id_type
+from libs.webserver.schemas.custom_types import valid_device_id_type, valid_group_id_type
 
 _ALL_CUSTOMIZABLE_EFFECTS = [*effect_enum, "effect_random_cycle"]
 """ List of all customizable effects. """
@@ -9,11 +9,24 @@ _EFFECT_SCHEMA_PARSED = remove_required_keys(list(effect_schema["properties"].va
 """ Parsed effect schema. Using schema from config validator service to avoid duplication. """
 
 
+_DEVICE_GROUP_OR_ALL_TYPE = {
+    "anyOf": [
+        valid_device_id_type,
+        valid_group_id_type,
+        {
+            "type": "string",
+            "enum": ["all_devices"],
+        },
+    ],
+}
+""" A device id, a group id, or ``all_devices``. """
+
+
 GET_EFFECT_SETTING_SCHEMA = {
     "type": "object",
     "required": ["device", "effect", "setting_key"],
     "properties": {
-        "device": valid_device_id_type,
+        "device": _DEVICE_GROUP_OR_ALL_TYPE,
         "effect": {
             "type": "string",
             "enum": _ALL_CUSTOMIZABLE_EFFECTS,
@@ -30,7 +43,7 @@ GET_EFFECT_SETTINGS_SCHEMA = {
     "type": "object",
     "required": ["device", "effect"],
     "properties": {
-        "device": valid_device_id_type,
+        "device": _DEVICE_GROUP_OR_ALL_TYPE,
         "effect": {
             "type": "string",
             "enum": _ALL_CUSTOMIZABLE_EFFECTS,
@@ -44,7 +57,7 @@ SET_EFFECT_SETTINGS_SCHEMA = {
     "type": "object",
     "required": ["device", "effect", "settings"],
     "properties": {
-        "device": valid_device_id_type,
+        "device": _DEVICE_GROUP_OR_ALL_TYPE,
         "effect": {
             "type": "string",
             "enum": _ALL_CUSTOMIZABLE_EFFECTS,

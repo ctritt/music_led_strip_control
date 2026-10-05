@@ -6,7 +6,8 @@ tags:
 parameters:
   - name: device
     in: query
-    description: Device for which to get the effect settings from
+    description: "Device, group, or `all_devices` to read effect settings from.\n\n
+                  Groups and `all_devices` return settings from the first device in that selection."
     required: true
     schema:
       type: string
