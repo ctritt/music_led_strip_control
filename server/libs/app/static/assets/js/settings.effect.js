@@ -106,8 +106,9 @@ $(() => {
                 }
                 el.trigger('change');
             });
-        }).fail((data) => {
-            console.log(`Error while loading effect settings. Error:\n\n${data.responseText}`);
+        }).catch((data) => {
+            const detail = data && data.responseText ? data.responseText : data;
+            console.log(`Error while loading effect settings. Error:\n\n${detail}`);
             new Toast('Error while loading effect settings.').error();
         });
     }
