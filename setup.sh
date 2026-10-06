@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Setup script for MLSC
-# https://github.com/TobKra96/music_led_strip_control
+# https://github.com/ctritt/music_led_strip_control
 
 if [[ $EUID -eq 0 ]]; then
     echo "Do not run this script as root." >&2
@@ -173,7 +173,7 @@ if [[ -d "$PROJ_DIR" ]]; then
         prompt -s "\nNew backup of ${PROJ_NAME} created."
 
         git clone --depth 1 --branch "$GIT_BRANCH" \
-            https://github.com/TobKra96/music_led_strip_control.git "$PROJ_DIR"
+            https://github.com/ctritt/music_led_strip_control.git "$PROJ_DIR"
 
         prompt -s "\nConfig is stored in .mlsc, in the same directory as the MLSC installation."
 
@@ -184,7 +184,7 @@ if [[ -d "$PROJ_DIR" ]]; then
     fi
 else
     git clone --depth 1 --branch "$GIT_BRANCH" \
-        https://github.com/TobKra96/music_led_strip_control.git "$PROJ_DIR"
+        https://github.com/ctritt/music_led_strip_control.git "$PROJ_DIR"
 fi
 
 # Install/update modules from requirements.txt.
