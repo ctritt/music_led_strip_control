@@ -242,11 +242,117 @@ $(() => {
         });
     }
 
+    /**
+     * Fill the effect dropdown from the effects resource.
+     * @param {{non_music: Object.<string, string>, music: Object.<string, string>, special: Object.<string, string>}} effects
+     */
+    const populateGroupEffects = (effects) => {
+        const effectSelect = $('#group_control_effect');
+        const groups = [
+            ['Non-Music Effects', effects.non_music],
+            ['Music Effects', effects.music],
+            ['Special Effects', effects.special],
+        ];
+
+        effectSelect.empty();
+        groups.forEach(([label, options]) => {
+            const optgroup = $(`<optgroup label="${label}"></optgroup>`);
+            $.each(options, (effectId, effectName) => {
+                optgroup.append(`<option value="${effectId}">${effectName}</option>`);
+            });
+            effectSelect.append(optgroup);
+        });
+    }
+
+    /**
+     * Fill the group dropdown, keeping All Devices first.
+     * @param {Object.<string, string>} groups
+     */
+    const populateGroups = (groups) => {
+        const groupSelect = $('#group_control_group');
+        const selected = groupSelect.val();
+
+        groupSelect.find('option:not([value="all_devices"])').remove();
+        $.each(groups, (groupId, groupName) => {
+            groupSelect.append(`<option value="${groupId}">${groupName}</option>`);
+        });
+        groupSelect.val(groupSelect.find(`option[value="${selected}"]`).length ? selected : 'all_devices');
+    }
+
+    /**
+     * Load the current effect and brightness for the selected group.
+     */
+    const loadGroupControls = () => {
+        const group = $('#group_control_group').val();
+
+        $.ajax({
+            url: '/api/settings/general/group',
+            data: { group }
+        }).done((data) => {
+            $('#group_control_effect').val(data.effect);
+            $('#group_control_brightness').val(data.brightness);
+            $('#group_brightness_value').text(data.brightness);
+            $('#apply_group_btn').prop('disabled', false);
+        }).fail((data) => {
+            $('#apply_group_btn').prop('disabled', true);
+            console.log(`Error while loading group lights. Error:\n\n${data.responseText}`);
+            new Toast('This group has no devices.').error();
+        });
+    }
+
+    /**
+     * Apply the selected effect and brightness to every device in the group.
+     */
+    const applyGroupControls = () => {
+        const data = {
+            group: $('#group_control_group').val(),
+            effect: $('#group_control_effect').val(),
+            brightness: Number($('#group_control_brightness').val())
+        };
+
+        $.ajax({
+            url: '/api/settings/general/group',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json;charset=UTF-8'
+        }).done(() => {
+            new Toast('Group lights updated.').success();
+        }).fail((data) => {
+            console.log(`Error while updating group lights. Error:\n\n${data.responseText}`);
+            new Toast('Error while updating group lights.').error();
+        });
+    }
+
     Promise.all(promises).then(() => {
         getLocalSettings();
     }).catch((data) => {
         console.log(data);
         new Toast('Error while preloading dropdown values.').error();
+    });
+
+    Promise.all([
+        $.ajax('/api/resources/effects'),
+        $.ajax('/api/system/groups')
+    ]).then(([effects, groups]) => {
+        populateGroupEffects(effects);
+        populateGroups(groups.groups);
+        loadGroupControls();
+    }).catch((data) => {
+        console.log(data);
+        $('#apply_group_btn').prop('disabled', true);
+        new Toast('Error while loading group lights.').error();
+    });
+
+    $('#group_control_group').on('change', () => {
+        loadGroupControls();
+    });
+
+    $('#group_control_brightness').on('input', (e) => {
+        $('#group_brightness_value').text(e.currentTarget.value);
+    });
+
+    $('#apply_group_btn').on('click', () => {
+        applyGroupControls();
     });
 
     $('#save_btn').on('click', () => {

@@ -1,0 +1,44 @@
+Return group effect and brightness
+---
+tags:
+  - Settings
+
+parameters:
+  - name: group
+    in: query
+    description: Group id, or `all_devices`, to read the current effect and brightness from
+    required: true
+    schema:
+      type: string
+    examples:
+      example1:
+        summary: All devices
+        value: all_devices
+      example2:
+        summary: Group id
+        value: group_0
+
+responses:
+  200:
+    description: OK
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - group
+            - effect
+            - brightness
+          properties:
+            group:
+              type: string
+            effect:
+              type: string
+            brightness:
+              type: integer
+
+  404:
+    description: Not Found
+
+  422:
+    description: Unprocessable Entity

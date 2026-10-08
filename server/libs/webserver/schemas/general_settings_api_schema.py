@@ -1,4 +1,5 @@
-from libs.webserver.schemas.config_validator_service import general_settings_schema, remove_required_keys
+from libs.webserver.schemas.config_validator_service import effect_enum, general_settings_schema, remove_required_keys
+from libs.webserver.schemas.custom_types import valid_group_id_type
 
 _GENERAL_SETTINGS_SCHEMA_PARSED = remove_required_keys(general_settings_schema)
 """ Parsed general settings schema. Using schema from config validator service to avoid duplication. """
@@ -23,7 +24,7 @@ ONE_GENERAL_SETTING_SCHEMA = {
                 "n_fft_bins",
                 "n_rolling_history",
                 "webserver_port",
-            ]
+            ],
         },
     },
 }
@@ -43,3 +44,46 @@ SET_GENERAL_SETTINGS_SCHEMA = {
     },
 }
 """ Schema for `POST /api/settings/general`. """
+
+
+_ALL_EFFECTS = [*effect_enum, "effect_off", "effect_random_cycle", "effect_random_music", "effect_random_non_music"]
+
+_GROUP_OR_ALL_TYPE = {
+    "anyOf": [
+        valid_group_id_type,
+        {
+            "type": "string",
+            "enum": ["all_devices"],
+        },
+    ],
+}
+""" A group id or ``all_devices``. """
+
+
+GET_GROUP_CONTROLS_SCHEMA = {
+    "type": "object",
+    "required": ["group"],
+    "properties": {
+        "group": _GROUP_OR_ALL_TYPE,
+    },
+}
+""" Schema for `GET /api/settings/general/group`. """
+
+
+APPLY_GROUP_CONTROLS_SCHEMA = {
+    "type": "object",
+    "required": ["group", "effect", "brightness"],
+    "properties": {
+        "group": _GROUP_OR_ALL_TYPE,
+        "effect": {
+            "type": "string",
+            "enum": _ALL_EFFECTS,
+        },
+        "brightness": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+        },
+    },
+}
+""" Schema for `POST /api/settings/general/group`. """

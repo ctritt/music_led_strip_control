@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import atexit
 from collections.abc import Mapping
 from functools import wraps
@@ -11,6 +13,7 @@ from libs.effect_item import EffectItem
 from libs.effects_enum import EffectsEnum
 from libs.notification_enum import NotificationEnum
 from libs.notification_item import NotificationItem
+from libs.webserver.messages import DeviceNotFound
 
 scheduler = BackgroundScheduler()
 
@@ -21,12 +24,14 @@ def handle_config_errors(func):
     Decorator for catching any `Key` or `Value` errors in the config when calling API endpoints.
     In case of error, None is returned.
     """
+
     @wraps(func)
     def wrapper(*args, **kwargs) -> None:
         try:
             return func(*args, **kwargs)
         except (KeyError, ValueError):
             return None
+
     return wrapper
 
 
@@ -110,6 +115,24 @@ class ExecuterBase:
 
     def refresh_device(self, device_id):
         self.put_into_notification_queue(NotificationEnum.config_refresh, device_id)
+
+    def _devices_for_target(self, target: str) -> list[str] | DeviceNotFound:
+        """Return device ids represented by a device, group, or ``all_devices``."""
+        configs = self._config["device_configs"]
+
+        if target == self.all_devices_id:
+            device_ids = list(configs)
+        elif target.startswith("group_") and target in self._config["general_settings"]["device_groups"]:
+            device_ids = [device_id for device_id, config in configs.items() if target in config["device_groups"]]
+        elif target in configs:
+            device_ids = [target]
+        else:
+            return DeviceNotFound
+
+        if not device_ids:
+            return DeviceNotFound
+
+        return device_ids
 
     @staticmethod
     def validate_data_in(dictionary: dict, keys: tuple) -> bool:

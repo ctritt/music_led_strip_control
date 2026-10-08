@@ -5,24 +5,6 @@ from libs.webserver.messages import BadRequest, DeviceNotFound, NotFound, Settin
 
 
 class EffectSettingsExecuter(ExecuterBase):
-    def _devices_for_target(self, target: str) -> list[str] | DeviceNotFound:
-        """Return device ids represented by a device, group, or ``all_devices``."""
-        configs = self._config["device_configs"]
-
-        if target == self.all_devices_id:
-            device_ids = list(configs)
-        elif target.startswith("group_") and target in self._config["general_settings"]["device_groups"]:
-            device_ids = [device_id for device_id, config in configs.items() if target in config["device_groups"]]
-        elif target in configs:
-            device_ids = [target]
-        else:
-            return DeviceNotFound
-
-        if not device_ids:
-            return DeviceNotFound
-
-        return device_ids
-
     def get_effect_setting(self, device: str, effect: str, setting_key: str) -> dict | DeviceNotFound | SettingNotFound:
         """Return the value of a setting for an effect.
 

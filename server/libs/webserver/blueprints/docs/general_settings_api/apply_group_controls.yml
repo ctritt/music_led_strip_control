@@ -1,0 +1,58 @@
+Set group effect and brightness
+---
+tags:
+  - Settings
+
+requestBody:
+  description: "Effect and brightness to apply to every device in the group.\n\n
+                Use `all_devices` to update every device."
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - group
+          - effect
+          - brightness
+        properties:
+          group:
+            type: string
+          effect:
+            type: string
+          brightness:
+            type: integer
+            minimum: 0
+            maximum: 100
+      examples:
+        example1:
+          summary: All devices
+          value:
+            group: all_devices
+            effect: effect_single
+            brightness: 80
+
+responses:
+  200:
+    description: OK
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - group
+            - effect
+            - brightness
+          properties:
+            group:
+              type: string
+            effect:
+              type: string
+            brightness:
+              type: integer
+
+  404:
+    description: Not Found
+
+  422:
+    description: Unprocessable Entity
