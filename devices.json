@@ -1,0 +1,98 @@
+[
+	{
+		"deviceName": "Master TV",
+		"numOfLEDs": 144,
+		"maxFPS": 60,
+		"ledStripMiddle": 72,
+		"outputType": "UDP",
+		"ledStripType": "ws281x_default",
+		"groups": ["Master Bedroom"],
+		"brightness": 100,
+		"udpAddress": "172.24.26.10",
+		"port": "7777"
+	},
+	{
+		"deviceName": "Den Mantle",
+		"numOfLEDs": 144,
+		"maxFPS": 60,
+		"ledStripMiddle": 72,
+		"outputType": "UDP",
+		"ledStripType": "ws281x_default",
+		"groups": ["Den"],
+		"brightness": 70,
+		"udpAddress": "172.24.26.11",
+		"port": "7777"
+	},
+	{
+		"deviceName": "Den TV Stand 1",
+		"numOfLEDs": 144,
+		"maxFPS": 60,
+		"ledStripMiddle": 72,
+		"outputType": "UDP",
+		"ledStripType": "ws281x_default",
+		"groups": ["Den"],
+		"brightness": 70,
+		"udpAddress": "172.24.26.12",
+		"port": "7777"
+	},
+	{
+		"deviceName": "Den TV Stand 2",
+		"numOfLEDs": 74,
+		"maxFPS": 60,
+		"ledStripMiddle": 37,
+		"outputType": "UDP",
+		"ledStripType": "ws281x_default",
+		"groups": ["Den"],
+		"brightness": 70,
+		"udpAddress": "172.24.26.13",
+		"port": "7777"
+	},
+	{
+		"deviceName": "Den TV Stand 3",
+		"numOfLEDs": 74,
+		"maxFPS": 60,
+		"ledStripMiddle": 37,
+		"outputType": "UDP",
+		"ledStripType": "ws281x_default",
+		"groups": ["Den"],
+		"brightness": 70,
+		"udpAddress": "172.24.26.14",
+		"port": "7777"
+	},
+	{
+		"deviceName": "Den Shelf 2",
+		"numOfLEDs": 144,
+		"maxFPS": 60,
+		"ledStripMiddle": 72,
+		"outputType": "UDP",
+		"ledStripType": "ws281x_default",
+		"groups": ["Den"],
+		"brightness": 70,
+		"udpAddress": "172.24.26.15",
+		"port": "7777"
+	},
+	{
+		"deviceName": "Den Shelf 3",
+		"numOfLEDs": 144,
+		"maxFPS": 60,
+		"ledStripMiddle": 72,
+		"outputType": "UDP",
+		"ledStripType": "ws281x_default",
+		"groups": ["Den"],
+		"brightness": 70,
+		"udpAddress": "172.24.26.16",
+		"port": "7777"
+	},
+	{
+		"deviceName": "Den Shelf 1",
+		"numOfLEDs": 144,
+		"maxFPS": 60,
+		"ledStripMiddle": 72,
+		"outputType": "UDP",
+		"ledStripType": "ws281x_default",
+		"groups": ["Den"],
+		"brightness": 70,
+		"udpAddress": "172.24.26.17",
+		"port": "7777"
+	}
+]
